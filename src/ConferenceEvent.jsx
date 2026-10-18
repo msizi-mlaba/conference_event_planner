@@ -4,6 +4,7 @@ import TotalCost from "./TotalCost";
 import { useSelector, useDispatch } from "react-redux";
 import { incrementQuantity, decrementQuantity } from "./venueSlice";
 import { incrementAvQuantity, decrementAvQuantity } from "./avSlice";
+import { toggleMealSelection } from "./mealsSlice";
 
 
 const ConferenceEvent = () => {
@@ -15,7 +16,6 @@ const ConferenceEvent = () => {
   const dispatch = useDispatch();
   const remainingAuditoriumQuantity = 3 - venueItems.find(item => item.name === "Auditorium Hall (Capacity:200)").quantity;
 
-  const avTotalCost = calculateTotalCost("av");
 
   const handleToggleItems = () => {
     console.log("handleToggleItems called");
@@ -55,17 +55,9 @@ const ConferenceEvent = () => {
 
   };
 
-  const getItemsFromTotalCost = () => {
-    const items = [];
-  };
-
-  const items = getItemsFromTotalCost();
-
-  const ItemsDisplay = ({ items }) => {
-
-  };
-
+  // 1. the function to calculate the total cost for each section (venue, av, meals) based on the current state of the items and number of people.
   const calculateTotalCost = (section) => {
+
     let totalCost = 0;
     if (section === "venue") {
       venueItems.forEach((item) => {
@@ -75,12 +67,96 @@ const ConferenceEvent = () => {
       avItems.forEach((item) => {
         totalCost += item.cost * item.quantity;
       });
+    } else if (section === "meals") {
+      mealsItems.forEach((item) => {
+        if (item.selected) {
+          totalCost += item.cost * numberOfPeople;
+        }
+      });
     }
     return totalCost;
   };
 
-
+  // 2. the totals that use it
   const venueTotalCost = calculateTotalCost("venue");
+  const avTotalCost = calculateTotalCost("av");
+  const mealsTotalCost = calculateTotalCost("meals");
+
+  // 3. the object that uses the totals (fixes problem 2 as well)
+  const totalCosts = {
+    venue: venueTotalCost,
+    av: avTotalCost,
+    meals: mealsTotalCost,
+  };
+
+  // Function to get the items for display in the total cost section
+  const getItemsFromTotalCost = () => {
+    const items = [];
+    venueItems.forEach((item) => {
+      if (item.quantity > 0) {
+        items.push({ ...item, type: "venue" });
+      }
+    });
+    avItems.forEach((item) => {
+      if (
+        item.quantity > 0 &&
+        !items.some((i) => i.name === item.name && i.type === "av")
+      ) {
+        items.push({ ...item, type: "av" });
+      }
+    });
+    mealsItems.forEach((item) => {
+      if (item.selected) {
+        const itemForDisplay = { ...item, type: "meals" };
+        if (item.numberOfPeople) {
+          itemForDisplay.numberOfPeople = numberOfPeople;
+        }
+        items.push(itemForDisplay);
+      }
+    });
+    return items;
+  };
+
+  const items = getItemsFromTotalCost();
+
+  const ItemsDisplay = ({ items }) => {
+    console.log(items);
+    return (
+      <>
+        <div className="display_box1">
+          {items.length === 0 && <p>No items selected</p>}
+          <table className="table_item_data">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Unit Cost</th>
+                <th>Quantity</th>
+                <th>Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item, index) => (
+                <tr key={index}>
+                  <td>{item.name}</td>
+                  <td>${item.cost}</td>
+                  <td>
+                    {item.type === "meals" || item.numberOfPeople
+                      ? ` For ${numberOfPeople} people`
+                      : item.quantity}
+                  </td>
+                  <td>
+                    {item.type === "meals" || item.numberOfPeople
+                      ? `${item.cost * numberOfPeople}`
+                      : `${item.cost * item.quantity}`}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </>
+    );
+  };
 
   const navigateToProducts = (idType) => {
     if (idType == '#venue' || idType == '#addons' || idType == '#meals') {
@@ -196,8 +272,8 @@ const ConferenceEvent = () => {
                       </div>
                     </div>
                   ))}
+                  <div className="total_cost">Total Cost: ${avTotalCost}</div>
                 </div>
-                <div className="total_cost">Total Cost:{avTotalCost}</div>
               </div>
 
               {/* Meal Section */}
@@ -238,16 +314,17 @@ const ConferenceEvent = () => {
                       <div className="meal_cost">${item.cost}</div>
                     </div>
                   ))}
-
+                  <div className="total_cost">Total Cost: ${mealsTotalCost}</div>
                 </div>
-                <div className="total_cost">Total Cost: </div>
-
-
               </div>
             </div>
           ) : (
             <div className="total_amount_detail">
-              <TotalCost totalCosts={totalCosts} handleClick={handleToggleItems} ItemsDisplay={() => <ItemsDisplay items={items} />} />
+              <TotalCost
+              totalCosts={totalCosts}
+              handleClick={handleToggleItems}
+              ItemsDisplay={() => <ItemsDisplay items={items} />}
+              />
             </div>
           )
         }

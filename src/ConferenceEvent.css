@@ -248,15 +248,16 @@
   .table_item_data tbody tr:first-child:hover {
     background-color: transparent;
   }
-  navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 20px;
-    background-color:#133b6a;
-    color: white;
-    width: 100vw;
-  }
+
+navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 20px;
+  background-color: #133b6a;
+  color: white;
+  width: 100%;
+}
   
   .company_logo {
     font-size: 30px;
@@ -313,16 +314,15 @@
     cursor: not-allowed; /* Change cursor to indicate that the button is not clickable */
   }
   @media (max-width: 700px) {
-    navbar {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        padding: 20px 20px;
-        background-color: #133b6a;
-        color: white;
-        width: 100vw;
-    }
+navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 20px;
+  background-color: #133b6a;
+  color: white;
+  width: 100%;
+}
     .nav_links {
         display: flex;
         flex-direction: column;
