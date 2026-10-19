@@ -1,3 +1,4 @@
+// ConferenceEvent.jsx
 import React, { useState } from "react";
 import "./ConferenceEvent.css";
 import TotalCost from "./TotalCost";
